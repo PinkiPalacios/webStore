@@ -15,25 +15,41 @@ const productos = function(data){
 $.get("http://172.50.1.92:4000/products").success(productos)
 
 var idGlobal
-
+var idComentario
 // $("body").on("click", )
+const detalle= function(info){
+	$(".lista").hide()
+	console.log(info)
+	console.log(info.product.comments[0].texto)
+   var comentarios=""
+   for (var i = info.product.comments.length - 1; i >= 0; i--) {
+   	comentarios= comentarios+`<div class="detalleComentario">
+   		<p>${info.product.comments[i].texto}</p>
+   		<p>${info.product.comments[i].fecha}</p>
+   		<button id="eliminarComentario" data-comments-id="${info.product.comments[i]._id}">Eliminar Comentario</button>
+   		<button id="editarComentario">EditarComentario</button>
+   	</div>`
+   }
+
+   $(".detalle").append(`<div class= "individual"><img src="${info.product.imgUrl}">
+       <h3>${info.product.nombre}</h3>
+       <p>${info.product.descripcion}</p>
+       <h3>${info.product.precio}</h3>
+       <button id="delete">Eliminar</button>
+       <button id="actualizar">Update</button>
+       <h3>Comentarios</h3>
+       ${comentarios}
+       <textarea id= "text" rows= "10" cols= "50"></textarea><br>
+       <button id="comentario">Comentar</button>
+       </div>`)
+}
 
 $('body').on('click', '.productos', function(){
     var id= $(this).data('product-id')
     idGlobal= id
-
-    $.get("http://172.50.1.92:4000/products/"+id, function(info){
-                    console.log(info)
-                    $(".lista").hide()
-                    $(".container").append(`<div class= "individual"><img src="${info.product.imgUrl}">
-                        <h3>${info.product.nombre}</h3>
-                        <p>${info.product.descripcion}</p>
-                        <h3>${info.product.precio}</h3>
-                        <button id="delete">Eliminar</button>
-                        <button id="actualizar">Update</button>
-                        </div>`)
-    })
+    $.get("http://172.50.1.92:4000/products/"+id).success(detalle)
 })
+
 $("body").on("click", "#actualizar", function(){
 	$(".lista").hide();
 	$(".individual").hide();
@@ -70,12 +86,39 @@ $("body").on("click", "#delete", function(){
 			idGlobal=null
 			$(".individual").hide()
 			$.get("http://172.50.1.92:4000/products").success(productos)
-			//$(".lista").show()
+			
 		}
 	})
 })
-
-
+$("body").on("click", "#eliminarComentario", function(){
+	idComentario= $(this).data('comments-id')
+	console.log(idComentario);
+	console.log('this',this);
+	$.ajax({
+		url: "http://172.50.1.92:4000/products/"+idGlobal+"/comment/"+idComentario,
+		type:"delete",
+		success: function(response){
+			console.log("hola")
+			$.get("http://172.50.1.92:4000/products/"+idGlobal).success(detalle)
+			
+		}
+	})
+})
+$("body").on("click", "#comentario", function(){
+	var texto= {
+		texto: $("#text").val()
+	}
+		
+	$.ajax({
+		url: "http://172.50.1.92:4000/products/"+idGlobal+"/comment",
+		method: "post",
+		contentType:"application/json",
+		data: JSON.stringify(texto),
+		success: function(response){
+			
+		}
+	})
+})
 
 $("body").on("click","#crear", function(){
 	$(".individual").hide()
