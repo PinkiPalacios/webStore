@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const products= require("../models/products")
+const comments= require("../models/comments")
 /* GET home page. */
 router.get('/products', (req, res, next) => {
   //res.render('index', { title: 'Express' });
@@ -15,14 +16,12 @@ router.get('/products', (req, res, next) => {
 		}
 
 	})
-
-
-
   
 });
 
 router.get('/products/:id', (req, res, next) => {
-	products.findById(req.params.id, function (err, product){
+
+	products.findById(req.params.id).populate('comments').exec( function (err, product){
 		if (err){
 			console.log(err)
 		}else{
@@ -30,7 +29,7 @@ router.get('/products/:id', (req, res, next) => {
 			res.json({product:product})
 
 		}
-	})
+	})//.populate('comments')
 
 })
 
@@ -38,12 +37,12 @@ router.post('/products', (req, res, next) => {
 console.log(req.body)
 	products.create({
 
-	nombre: req.body.nombre,
-	precio: req.body.precio,
-	descripcion: req.body.descripcion,
-	imgUrl: req.body.imgUrl,
+		nombre: req.body.nombre,
+		precio: req.body.precio,
+		descripcion: req.body.descripcion,
+		imgUrl: req.body.imgUrl,
 
-	}, function (producto){console.log ("producto creado", producto)} )
+	}, function (err, producto){console.log ("producto creado", producto)} )
 
 
 });
@@ -53,10 +52,10 @@ router.put('/products/:id', (req, res, next) => {
 	console.log(req.body)
 	products.findByIdAndUpdate(req.params.id ,{
 
-	nombre: req.body.nombre,
-	precio: req.body.precio,
-	descripcion: req.body.descripcion,
-	imgUrl: req.body.imgUrl,
+		nombre: req.body.nombre,
+		precio: req.body.precio,
+		descripcion: req.body.descripcion,
+		imgUrl: req.body.imgUrl,
 
 	}, function (producto){console.log ("producto modificado", producto)} )
 
@@ -80,27 +79,49 @@ router.delete('/products/:id', (req, res, next) => {
 });
 
 
+router.post('/products/:id/comment', function(req,res,next){
+
+	products.findOne({_id: req.params.id}, function(err, product ){
+
+		console.log("BODYYY", req.body)
+			comments.create({
+			texto: req.body.texto,
+			fecha: new Date(),
+
+		}, function (err, data){
+
+			product.comments.unshift(data)
+			console.log(data)
+			product.save();
+		})
+
+
+	})
+
 	
 
-	// products.create({
+})
 
-	// nombre: "a",
-	// precio:"210",
-	// descripcion: "c",
-	// imgUrl:"",
+router.put('/products/:id/comment/:idComment', function(req,res,next){
+	
+})
 
-	// }, function (producto){console.log ("producto creado", producto)} )
+router.delete('/products/:id/comment/:idComment', function(req,res,next){
+
+	comments.findByIdAndRemove(req.params.idComment, (err,data)=>{
+		if ("error",err){
+			console.log(err)
+			res.send(err)
+		}else{
+			console.log("eliminado",data)
+			res.send(data)
+		}
+	})
+})
+
+	
 
 
-
-
-
-
-// Devolver todos los productos get("/products")
-// Devolver un producto get("/products/:id")
-// Agregar un nuevo producto post("/products"), devuelve el nuevo producto.
-// Updatear un producto put("products/:id"), tiene que devolver el producto updateado.
-// Borrar un producto delete("/products/:id"), tiene que devolver la lista de productos sin el producto eliminado.
 
 
 
