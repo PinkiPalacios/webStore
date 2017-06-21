@@ -19,6 +19,7 @@ var idComentario
 // $("body").on("click", )
 const detalle= function(info){
 	$(".lista").hide()
+	$(".detalle").html()
 	console.log(info)
 	console.log(info.product.comments[0].texto)
    var comentarios=""
