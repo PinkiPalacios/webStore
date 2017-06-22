@@ -115,7 +115,7 @@ router.put('/products/:id/comment/:idComment', function(req,res,next){
 		texto: req.body.texto,
 		fecha: new Date(),
 
-	}, function (producto){
+	}, function (comentario){
 		console.log ("Comentario Modificado", comentario)
 		res.send(comentario)
 	} )
