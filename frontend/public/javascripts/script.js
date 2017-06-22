@@ -1,3 +1,4 @@
+//LISTA DE PRODUCTOS GENERAL
 const productos = function(data){
 	$('.lista').html("<button id=crear>Crear Producto</button>")
     $(".nuevo").hide()
@@ -16,20 +17,26 @@ $.get("http://172.50.1.92:4000/products").success(productos)
 
 var idGlobal
 var idComentario
-// $("body").on("click", )
+
+//PAGINA DEL PRODUCTO INDIVIDUAL
 const detalle= function(info){
 	$(".lista").hide()
-	$(".detalle").html()
-	console.log(info)
-	console.log(info.product.comments[0].texto)
-   var comentarios=""
+	$(".detalle").html("")
+	var comentarios=""
+	
    for (var i = info.product.comments.length - 1; i >= 0; i--) {
    	comentarios= comentarios+`<div class="detalleComentario">
    		<p>${info.product.comments[i].texto}</p>
    		<p>${info.product.comments[i].fecha}</p>
    		<button id="eliminarComentario" data-comments-id="${info.product.comments[i]._id}">Eliminar Comentario</button>
-   		<button id="editarComentario">EditarComentario</button>
-   	</div>`
+   		<button id="editarComentario" data-prueba=${info.product.comments[i]._id}>EditarComentario</button>
+   			<div class= "textarea">
+		   		<textarea id= "modificarComentario" data-comments-area="${info.product.comments[i]._id}" rows= "10" cols= "50">
+		   		</textarea>
+		   		<button id="enviar">Enviar</button>
+		   		</div>
+   		</div>`
+   		
    }
 
    $(".detalle").append(`<div class= "individual"><img src="${info.product.imgUrl}">
@@ -43,20 +50,25 @@ const detalle= function(info){
        <textarea id= "text" rows= "10" cols= "50"></textarea><br>
        <button id="comentario">Comentar</button>
        </div>`)
+    $(".textarea").hide()
 }
 
+
+//EVENTO PARA INGRESAR AL PRODUCTO INDIVIDUAL
 $('body').on('click', '.productos', function(){
     var id= $(this).data('product-id')
     idGlobal= id
     $.get("http://172.50.1.92:4000/products/"+id).success(detalle)
 })
 
+//EVENTO PARA QUE APAREZCA EL FORM DE UPDATE
 $("body").on("click", "#actualizar", function(){
 	$(".lista").hide();
 	$(".individual").hide();
 	$(".update").show();
 })
 
+//ENVIA LOS DATOS DEL FORM DEL UPDATE
 $("body").on("click", "#update", function(){
 
 	var respuesta = {
@@ -78,6 +90,7 @@ $("body").on("click", "#update", function(){
 	})
 })
 
+//EVENTO QUE ELIMINA UN PRODUCTO
 $("body").on("click", "#delete", function(){
 	$.ajax({
 		url: "http://172.50.1.92:4000/products/"+idGlobal,
@@ -91,6 +104,7 @@ $("body").on("click", "#delete", function(){
 		}
 	})
 })
+//ELIMINAR COMENTARIOS
 $("body").on("click", "#eliminarComentario", function(){
 	idComentario= $(this).data('comments-id')
 	console.log(idComentario);
@@ -99,12 +113,12 @@ $("body").on("click", "#eliminarComentario", function(){
 		url: "http://172.50.1.92:4000/products/"+idGlobal+"/comment/"+idComentario,
 		type:"delete",
 		success: function(response){
-			console.log("hola")
 			$.get("http://172.50.1.92:4000/products/"+idGlobal).success(detalle)
 			
 		}
 	})
 })
+//CREAR COMENTARIOS
 $("body").on("click", "#comentario", function(){
 	var texto= {
 		texto: $("#text").val()
@@ -116,17 +130,40 @@ $("body").on("click", "#comentario", function(){
 		contentType:"application/json",
 		data: JSON.stringify(texto),
 		success: function(response){
-			
+			$.get("http://172.50.1.92:4000/products/"+idGlobal).success(detalle)
 		}
 	})
 })
 
+//EDITAR COMENTARIO
+$("body").on("click", "#editarComentario", function(){
+	$(this).closest(".detalleComentario").find(".textarea").toggle()
+})
+
+$("body").on("click", "#enviar", function(){
+	var texto= {
+		texto: $(this).closest(".textarea").find("#modificarComentario").val()
+		
+	}
+	$.ajax({
+		url: "http://172.50.1.92:4000/products/"+idGlobal+"/comment/"+$(this).closest(".detalleComentario").find('#editarComentario').data('prueba'),
+		method: "put",
+		contentType:"application/json",
+		data: JSON.stringify(texto),
+		success: function(response){
+			$.get("http://172.50.1.92:4000/products/"+idGlobal).success(detalle)
+		}
+	})
+})
+
+//EVENTO QUE ABRE EL FORM PARA CREAR PRODUCTO NUEVO
 $("body").on("click","#crear", function(){
 	$(".individual").hide()
 	$(".lista").hide()
 	$(".nuevo").show()
 })
 
+//ENVIA LOS DATOS DEL FORM PRODUCTO NUEVO
 $("body").on("click", "#crearNuevo", function(){
 
 	var res = {
