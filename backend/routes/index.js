@@ -57,7 +57,10 @@ router.put('/products/:id', (req, res, next) => {
 		descripcion: req.body.descripcion,
 		imgUrl: req.body.imgUrl,
 
-	}, function (producto){console.log ("producto modificado", producto)} )
+	}, function (producto){
+		console.log ("producto modificado", producto)
+		res.send(producto)
+	} )
 
 
 });
@@ -93,7 +96,10 @@ router.post('/products/:id/comment', function(req,res,next){
 			product.comments.unshift(data)
 			console.log(data)
 			product.save();
+			res.send(data)
 		})
+
+
 
 
 	})
@@ -103,6 +109,16 @@ router.post('/products/:id/comment', function(req,res,next){
 })
 
 router.put('/products/:id/comment/:idComment', function(req,res,next){
+
+	comments.findByIdAndUpdate(req.params.idComment ,{
+
+		texto: req.body.texto,
+		fecha: new Date(),
+
+	}, function (producto){
+		console.log ("Comentario Modificado", comentario)
+		res.send(comentario)
+	} )
 	
 })
 
